@@ -2,8 +2,12 @@ package tptest.test.esgi.com.testgooglemap;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
@@ -38,10 +42,15 @@ public class MainActivity
         extends FragmentActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMarkerClickListener,
+        android.location.LocationListener,
         GoogleMap.OnMarkerDragListener,
         GoogleMap.OnInfoWindowClickListener,
         GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks
 {
+
+    public static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
+    // The minimum time between updates in milliseconds
+    public static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
 
     private GoogleApiClient googleApiClient;
 
@@ -182,12 +191,25 @@ public class MainActivity
     @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     public void goToLastPosition()
     {
-        final Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
-        final LatLng pos = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 15));
-        final Marker marker = googleMap.addMarker(new MarkerOptions().position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title("You ae HERE !"));
+        final LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        marker.showInfoWindow();
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+        {
+            showLocationSettings();
+        }
+        else
+        {
+            String bestProvider = locationManager.getBestProvider(new Criteria(), true);
+
+            Location location = locationManager.getLastKnownLocation(bestProvider);
+
+            if (location != null)
+            {
+                onLocationChanged(location);
+            }
+            locationManager.requestLocationUpdates(bestProvider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+
+        }
     }
 
     @OnShowRationale(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -233,5 +255,46 @@ public class MainActivity
                 likelyPlaces.release();
             }
         });
+    }
+
+    private void showLocationSettings()
+    {
+        new AlertDialog.Builder(this)
+                .setMessage("please enable gps")
+                .setPositiveButton("Enable", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
+                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                }).show();
+    }
+
+    public void onLocationChanged(Location location)
+    {
+        final LatLng pos = new LatLng(location.getLatitude(), location.getLongitude());
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(pos, 15));
+        final Marker marker = googleMap.addMarker(new MarkerOptions().position(pos).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title("You ae HERE !"));
+
+        marker.showInfoWindow();
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle)
+    {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s)
+    {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s)
+    {
+
     }
 }
