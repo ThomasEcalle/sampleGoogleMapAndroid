@@ -34,5 +34,6 @@ dependencies {
     compile 'com.github.hotchemi:permissionsdispatcher:3.0.0'
     annotationProcessor 'com.github.hotchemi:permissionsdispatcher-processor:3.0.0'
 
+
     testCompile 'junit:junit:4.12'
 }

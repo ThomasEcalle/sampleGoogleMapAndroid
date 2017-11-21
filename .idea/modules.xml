@@ -4,6 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/TestGoogleMap.iml" filepath="$PROJECT_DIR$/TestGoogleMap.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/sampleGoogleMapAndroid.iml" filepath="$PROJECT_DIR$/.idea/sampleGoogleMapAndroid.iml" />
     </modules>
   </component>
 </project>
